@@ -215,6 +215,7 @@ pub fn encode_aptos_mainnet_genesis_transaction(
 
 pub fn encode_genesis_transaction(
     aptos_root_key: Ed25519PublicKey,
+    accounts: &[AccountBalance],
     validators: &[Validator],
     framework: &ReleaseBundle,
     chain_id: ChainId,
@@ -225,6 +226,7 @@ pub fn encode_genesis_transaction(
 ) -> Transaction {
     Transaction::GenesisTransaction(WriteSetPayload::Direct(encode_genesis_change_set(
         &aptos_root_key,
+        accounts,
         validators,
         framework,
         chain_id,
@@ -237,6 +239,7 @@ pub fn encode_genesis_transaction(
 
 pub fn encode_genesis_change_set(
     core_resources_key: &Ed25519PublicKey,
+    accounts: &[AccountBalance],
     validators: &[Validator],
     framework: &ReleaseBundle,
     chain_id: ChainId,
@@ -297,6 +300,7 @@ pub fn encode_genesis_change_set(
     initialize_randomness_config(&mut session, &module_storage, randomness_config);
     initialize_randomness_resources(&mut session, &module_storage);
     initialize_on_chain_governance(&mut session, &module_storage, genesis_config);
+    create_accounts(&mut session, &module_storage, accounts);
     create_and_initialize_validators(&mut session, &module_storage, validators);
     if genesis_config.is_test {
         allow_core_resources_to_set_version(&mut session, &module_storage);
@@ -1233,6 +1237,7 @@ pub fn generate_test_genesis(
 
     let genesis = encode_genesis_change_set(
         &GENESIS_KEYPAIR.1,
+        vec![].as_ref(),
         validators,
         framework,
         ChainId::test(),
@@ -1275,6 +1280,7 @@ pub fn generate_mainnet_genesis(
 
     let genesis = encode_genesis_change_set(
         &GENESIS_KEYPAIR.1,
+        vec![].as_ref(),
         validators,
         framework,
         ChainId::test(),

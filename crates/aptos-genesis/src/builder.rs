@@ -36,7 +36,7 @@ use aptos_types::{
     transaction::Transaction,
     waypoint::Waypoint,
 };
-use aptos_vm_genesis::default_gas_schedule;
+use aptos_vm_genesis::{default_gas_schedule, AccountBalance};
 use rand::Rng;
 use serde::{de::DeserializeOwned, Serialize};
 use std::{
@@ -461,6 +461,7 @@ pub struct Builder {
     init_config: Option<InitConfigFn>,
     init_genesis_stake: Option<InitGenesisStakeFn>,
     init_genesis_config: Option<InitGenesisConfigFn>,
+    accounts: Vec<AccountBalance>,
 }
 
 impl Builder {
@@ -476,6 +477,7 @@ impl Builder {
             init_config: None,
             init_genesis_stake: None,
             init_genesis_config: None,
+            accounts: vec![],
         })
     }
 
@@ -507,6 +509,11 @@ impl Builder {
         init_genesis_config: Option<InitGenesisConfigFn>,
     ) -> Self {
         self.init_genesis_config = init_genesis_config;
+        self
+    }
+
+    pub fn with_accounts(mut self, accounts: Vec<AccountBalance>) -> Self {
+        self.accounts = accounts;
         self
     }
 
@@ -677,6 +684,7 @@ impl Builder {
         let mut genesis_info = GenesisInfo::new(
             ChainId::test(),
             root_key,
+            self.accounts.clone(),
             configs,
             self.framework.clone(),
             &genesis_config,
