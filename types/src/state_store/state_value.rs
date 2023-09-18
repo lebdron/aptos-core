@@ -35,6 +35,9 @@ pub enum StateValueMetadata {
     },
 }
 
+// To avoid nested options when fetching a resource and its metadata.
+pub type StateValueMetadataKind = Option<StateValueMetadata>;
+
 impl StateValueMetadata {
     pub fn new(deposit: u64, creation_time_usecs: &CurrentTimeMicroseconds) -> Self {
         Self::V0 {
@@ -156,7 +159,7 @@ impl StateValue {
     }
 }
 
-#[cfg(any(test, feature = "fuzzing"))]
+// #[cfg(any(test, feature = "fuzzing"))]
 impl From<Vec<u8>> for StateValue {
     fn from(bytes: Vec<u8>) -> Self {
         StateValue::new_legacy(bytes.into())
