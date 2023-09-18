@@ -300,7 +300,9 @@ pub fn encode_genesis_change_set(
     initialize_randomness_config(&mut session, &module_storage, randomness_config);
     initialize_randomness_resources(&mut session, &module_storage);
     initialize_on_chain_governance(&mut session, &module_storage, genesis_config);
-    create_accounts(&mut session, &module_storage, accounts);
+    for account in accounts {
+        create_account(&mut session, &module_storage, account);
+    }
     create_and_initialize_validators(&mut session, &module_storage, validators);
     if genesis_config.is_test {
         allow_core_resources_to_set_version(&mut session, &module_storage);
@@ -766,6 +768,25 @@ fn create_accounts(
         "create_accounts",
         vec![],
         serialized_values,
+    );
+}
+
+fn create_account(
+    session: &mut SessionExt,
+    module_storage: &impl AptosModuleStorage,
+    account: &AccountBalance
+) {
+    exec_function(
+        session,
+        module_storage,
+        GENESIS_MODULE_NAME,
+        "create_account",
+        vec![],
+        serialize_values(&vec![
+            MoveValue::Signer(CORE_CODE_ADDRESS),
+            MoveValue::Address(account.account_address),
+            MoveValue::U64(account.balance),
+        ]),
     );
 }
 
