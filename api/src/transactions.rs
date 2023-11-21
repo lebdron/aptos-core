@@ -28,6 +28,7 @@ use aptos_api_types::{
     MAX_RECURSIVE_TYPES_ALLOWED, U64,
 };
 use aptos_crypto::{hash::CryptoHash, signing_message};
+use aptos_logger::debug;
 use aptos_types::{
     account_config::CoinStoreResource,
     account_view::AccountView,
@@ -313,8 +314,15 @@ impl TransactionsApi {
             .check_api_output_enabled("Submit transaction", &accept_type)?;
         let ledger_info = self.context.get_latest_ledger_info()?;
         let signed_transaction = self.get_signed_transaction(&ledger_info, data)?;
-        self.create(&accept_type, &ledger_info, signed_transaction)
-            .await
+        let txn_log = format!("{}:{}", signed_transaction.sender(), signed_transaction.sequence_number());
+        let result = self.create(&accept_type, &ledger_info, signed_transaction)
+            .await;
+        let result_log = match &result {
+            Ok(_) => ":accepted".to_string(),
+            Err(err) => err.to_string(),
+        };
+        debug!("submit_transaction rpc request received: {}:{}", txn_log, result_log);
+        result
     }
 
     /// Submit batch transactions
