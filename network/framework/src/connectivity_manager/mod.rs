@@ -604,6 +604,16 @@ where
         let (cancel_tx, cancel_rx) = oneshot::channel();
 
         let network_context = self.network_context;
+        debug!(
+            NetworkSchema::new(&network_context)
+                    .remote_peer(&peer_id)
+                    .network_address(&addr),
+                "{} Will dial peer {} at {} in {}ms",
+                network_context,
+                peer_id.short_str(),
+                addr,
+                dial_delay.as_millis()
+        );
         // Create future which completes by either dialing after calculated
         // delay or on cancellation.
         let f = async move {
